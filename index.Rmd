@@ -234,7 +234,7 @@ Remember that `bmi` was imputed by Bayesian linear regression and (the range of)
 
 ---
 
-# Repeated analysis in mice #2
+# Repeated analysis in `mice` #1
 
 ---
 

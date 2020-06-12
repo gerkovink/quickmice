@@ -330,7 +330,7 @@ There are 13 patterns in total, with the pattern where `gen`, `phb` and `tv` are
 
 ---
 
-**5. How many patterns occur for which the variable `gen` (genital Tannerstage) is missing?**
+**12. How many patterns occur for which the variable `gen` (genital Tannerstage) is missing?**
 ```{r}
 mpat <- md.pattern(boys, plot = FALSE)
 sum(mpat[, "gen"] == 0)
@@ -339,7 +339,7 @@ Answer: 8 patterns (503 cases)
 
 ---
 
-**12. Let us focus more precisely on the missing data patterns. Does the missing data of `gen` depend on `age`? One could for example check this by making a histogram of `age` separately for the cases with known genital stages and for cases with missing genital stages.**
+**13. Let us focus more precisely on the missing data patterns. Does the missing data of `gen` depend on `age`? One could for example check this by making a histogram of `age` separately for the cases with known genital stages and for cases with missing genital stages.**
 
 To create said histogram in `R`, a missingness indicator for `gen` has to be created. A missingness indicator is a dummy variable with value `1` for observed values (in this case genital status) and `0` for missing values. Create a missingness indicator for `gen` by typing
 ```{r}
@@ -369,14 +369,14 @@ The histogram shows that the missingness in `gen` is not equally distributed acr
 
 ---
 
-**13. Impute the `boys` dataset with mice using all default settings and name the `mids` (multiply imputed data set) object `imp`.**
+**14. Impute the `boys` dataset with mice using all default settings and name the `mids` (multiply imputed data set) object `imp`.**
 ```{r}
 imp <- mice(boys, print=FALSE)
 ```
 
 ---
 
-**8. Compare the means of the imputed data with the means of the incomplete data.**
+**15. Compare the means of the imputed data with the means of the incomplete data.**
 First, we calculate the observed data means:
 ```{r}
 boys %>% 
@@ -417,7 +417,7 @@ help(mammalsleep)
 
 ---
 
-**14. Get an overview of the data.** 
+**16. Get an overview of the data.** 
 
 Find information about the size of the data, the variables measured and the amount of missingness.
 ```{r}
@@ -433,7 +433,7 @@ Answer: 8 patterns in total, with the pattern where everything is observed occur
 
 ---
 
-**15. Generate five imputed datasets with the default method `pmm`. Give the algorithm 10 iterations. **
+**17. Generate five imputed datasets with the default method `pmm`. Give the algorithm 10 iterations. **
 ```{r}
 imp1 <- mice(mammalsleep, maxit = 10, print=F)
 ```
@@ -444,7 +444,7 @@ plot(imp1)
 
 ---
 
-**16. Perform a regression analysis on the imputed dataset with `sws` as dependent variable and `log10(bw)` and `odi` as independent variables.**
+**18. Perform a regression analysis on the imputed dataset with `sws` as dependent variable and `log10(bw)` and `odi` as independent variables.**
 
 ```{r}
 fit1 <- with(imp1, lm(sws ~ log10(bw) + odi))
@@ -452,7 +452,7 @@ fit1 <- with(imp1, lm(sws ~ log10(bw) + odi))
 
 ---
 
-**17. Pool the regression analysis and inspect the pooled analysis.**
+**19. Pool the regression analysis and inspect the pooled analysis.**
 ```{r}
 est1 <- pool(fit1)
 est1
@@ -463,14 +463,14 @@ The `fmi` and `lambda` are much too high. This is due to `species` being include
 
 ---
 
-**18. Impute `mammalsleep` again, but now exclude `species` from the data.**
+**20. Impute `mammalsleep` again, but now exclude `species` from the data.**
 ```{r, cache = FALSE}
 imp2 <- mice(mammalsleep[ , -1], maxit = 10, print = F)
 ```
 
 ---
 
-**19. Compute and pool the regression analysis again. **
+**21. Compute and pool the regression analysis again. **
 ```{r}
 fit2 <- with(imp2, lm(sws ~ log10(bw) + odi))
 est2 <- pool(fit2)
@@ -482,7 +482,7 @@ Note that the `fmi` and `lambda` have dramatically decreased. The imputation mod
 
 ---
 
-**20. Plot the trace lines for the new imputations**
+**22. Plot the trace lines for the new imputations**
 ```{r}
 plot(imp2)
 ```
@@ -500,7 +500,7 @@ or the compositional relation in the mammalsleep data:
 
 ---
 
-**22. Use passive imputation to impute the deterministic sleep relation in the `mammalsleep` data. Name the new multiply imputed dataset `pas.imp`.**
+**23. Use passive imputation to impute the deterministic sleep relation in the `mammalsleep` data. Name the new multiply imputed dataset `pas.imp`.**
 
 First, we create a `method` vector:
 ```{r cache = FALSE}
@@ -540,6 +540,27 @@ pas.imp <- mice(mammalsleep,
 We used a custom predictor matrix and method vector to tailor our imputation approach to the passive imputation problem. We made sure to exclude `ts` as a predictor for the imputation of `sws` and `ps` to avoid circularity. 
 
 We also gave the imputation algorithm 10 iterations to converge and fixed the seed to `123` for this `mice` instance. This means that even when people do not fix the overall `R` seed for a session, exact replication of results can be obtained by simply fixing the `seed` for the random number generator within `mice`. Naturally, the same input (data) is each time required to yield the same output (`mids`-object). 
+
+## For fun
+
+**What you shouldn’t do with passive imputation!**
+
+Never set all relations fixed. You will remain with the starting values and waste your computer’s energy (and your own).
+```{r cache = FALSE}
+meth<- make.method(boys)
+pred <- make.predictorMatrix(boys)
+meth["bmi"]<- "~ I(wgt / (hgt / 100)^2)"
+meth["wgt"]<- "~ I(bmi * (hgt / 100)^2)"
+meth["hgt"]<- "~ I(sqrt(wgt / bmi) * 100)"
+pred[c("bmi", "wgt", "hgt"), ] <- 0
+imp.path <- mice(boys, 
+                 meth=meth, 
+                 pred=pred, 
+                 seed=123)
+plot(imp.path, c("hgt", "wgt", "bmi"))
+```
+
+We named the `mids` object `imp.path`, because the nonconvergence is pathological in this example!
 
 ---
 

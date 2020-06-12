@@ -72,7 +72,7 @@ nhanes
  and *cholesterol (mg/dL)*.
 
 To learn more about the data, use one of the two following help commands:
-```{r, cache = TRUE}
+```{r, eval = FALSE, cache = FALSE}
 help(nhanes)
 ?nhanes
 ```
@@ -234,7 +234,7 @@ Remember that `bmi` was imputed by Bayesian linear regression and (the range of)
 
 ---
 
-# Repeated analysis in mice
+# Repeated analysis in mice #2
 
 ---
 
@@ -408,6 +408,98 @@ imp %>%
 
 ---
 
+# Repeated analysis in `mice` #2
+
+**16. Calculate a correlation between all continuous variables for the imputed `boys` data**
+
+There are two ways in which we can calculate the correlation on the imputed data:
+
+- **The wrong way: calculate an estimate over the *average imputed dataset* **.
+
+Quite often people are suggesting that using the average imputed dataset - so taking the average over the imputed data set such that any realized cell depicts the average over the corresponding data in the imputed data - would be efficient and conform Rubin's rules. This is not true. Doing this will yield false inference. 
+
+To demonstrate this, let's ceate the averaged data set and exclude the non-numerical columns:
+```{r warning=FALSE}
+ave <- imp %>%
+  mice::complete("long") %>%
+  group_by(.id) %>%
+  summarise_all(.funs = mean) %>%
+  select(-.id, -.imp, -phb, -gen, -reg)
+
+head(ave)
+```
+If we now calculate Pearson's correlation, rounded to two digits:
+```{r}
+cor.wrong <- ave %>%
+  cor() %>%
+  round(digits = 2)
+```
+we obtain:
+```{r}
+cor.wrong
+```
+
+
+- **The correct way: calculate an estimate for each imputed dataset and average over the estimates**
+
+It is best to do a [Fisher transformation](https://en.wikipedia.org/wiki/Fisher_transformation) before pooling the correlation estimates - and a backtransformation afterwards. Therefore we define the following two functions that allow us to transform and backtransform any value:
+```{r}
+fisher.trans <- function(x) 1/2 * log((1 + x) / (1 - x))
+fisher.backtrans <- function(x) (exp(2 * x) - 1) / (exp(2 * x) + 1)
+```
+
+Now, to calculate the correlation on the imputed data
+```{r}
+cor <- imp %>%
+  mice::complete("all") %>%
+  map(select, -phb, -gen, -reg) %>%  
+  map(stats::cor) %>%
+  map(fisher.trans)
+cor
+```
+
+The object `cor` is a list over the $m$ imputations where each listed index is a correlation `matrix`. To calculate the average over the correlation matrices, we can add the $m$ listed indices and divide them by $m$:
+```{r}
+cor.rect <- Reduce("+", cor) / length(cor) # m is equal to the length of the list
+cor.rect <- fisher.backtrans(cor.rect)
+```
+
+If we compare the wrong estimates in `cor.wrong`
+```{r}
+cor.wrong
+```
+with the correct estimates in `cor.rect`
+```{r}
+round(cor.rect, digits = 2)
+```
+
+We see that the wrong estimates in `cor.wrong` have the tendency to overestimate the correlation coefficient that is correctly combined following Rubin's rules. 
+
+The correct estimates have a diagonal of `NaN`'s, because the tranformation of a correlation of `1` yields `Inf` and the backtransformation of `Inf` has no representation in real number space. We know the diagonal is supposed to be 1, so we can simply correct this
+```{r}
+diag(cor.rect) <- 1
+cor.rect
+```
+
+---
+
+## Why does the average data set not serve as a good basis for analysis?
+
+In [`FIMD v2`, paragraph 5.1.2](https://stefvanbuuren.name/fimd/workflow.html) Stef mentions the following:
+
+>The average workflow is faster and easier than the correct methods, since there is no need to replicate the analyses $m$ times. In the words of Dempster and Rubin (1983), this workflow is
+>
+>***seductive because it can lull the user into the pleasurable state of believing that the data are complete after all.***
+>
+>The ensuing statistical analysis does not know which data are observed and which are missing, and treats all data values as real, which will underestimate the uncertainty of the parameters. The reported standard errors and  p-values after data-averaging are generally too low. The correlations between the variables of the averaged data will be too high. For example, the correlation matrix in the average data
+are more extreme than the average of the $m$ correlation matrices, which is an example of ecological fallacy. As researchers tend to like low  p-values and high correlations, there is a cynical reward for the analysis of the average data. However, analysis of the average data cannot give a fair representation of the uncertainties associated with the underlying data, and hence is not recommended.
+
+---
+
+So, please stay away from averaging the imputed data sets. Instead, use the correct workflow of analyzing the imputed sets seperately and combining the inference afterwards.
+
+---
+
 # The importance of the imputation model
 
 The `mammalsleep` dataset is part of `mice`. It contains the Allison and Cicchetti (1976) data for mammalian species. To learn more about this data, type
@@ -417,7 +509,7 @@ help(mammalsleep)
 
 ---
 
-**16. Get an overview of the data.** 
+**17. Get an overview of the data.** 
 
 Find information about the size of the data, the variables measured and the amount of missingness.
 ```{r}
@@ -433,7 +525,7 @@ Answer: 8 patterns in total, with the pattern where everything is observed occur
 
 ---
 
-**17. Generate five imputed datasets with the default method `pmm`. Give the algorithm 10 iterations. **
+**18. Generate five imputed datasets with the default method `pmm`. Give the algorithm 10 iterations. **
 ```{r}
 imp1 <- mice(mammalsleep, maxit = 10, print=F)
 ```
@@ -444,7 +536,7 @@ plot(imp1)
 
 ---
 
-**18. Perform a regression analysis on the imputed dataset with `sws` as dependent variable and `log10(bw)` and `odi` as independent variables.**
+**19. Perform a regression analysis on the imputed dataset with `sws` as dependent variable and `log10(bw)` and `odi` as independent variables.**
 
 ```{r}
 fit1 <- with(imp1, lm(sws ~ log10(bw) + odi))
@@ -452,7 +544,7 @@ fit1 <- with(imp1, lm(sws ~ log10(bw) + odi))
 
 ---
 
-**19. Pool the regression analysis and inspect the pooled analysis.**
+**20. Pool the regression analysis and inspect the pooled analysis.**
 ```{r}
 est1 <- pool(fit1)
 est1
@@ -463,14 +555,14 @@ The `fmi` and `lambda` are much too high. This is due to `species` being include
 
 ---
 
-**20. Impute `mammalsleep` again, but now exclude `species` from the data.**
+**21. Impute `mammalsleep` again, but now exclude `species` from the data.**
 ```{r, cache = FALSE}
 imp2 <- mice(mammalsleep[ , -1], maxit = 10, print = F)
 ```
 
 ---
 
-**21. Compute and pool the regression analysis again. **
+**22. Compute and pool the regression analysis again. **
 ```{r}
 fit2 <- with(imp2, lm(sws ~ log10(bw) + odi))
 est2 <- pool(fit2)
@@ -482,7 +574,7 @@ Note that the `fmi` and `lambda` have dramatically decreased. The imputation mod
 
 ---
 
-**22. Plot the trace lines for the new imputations**
+**23. Plot the trace lines for the new imputations**
 ```{r}
 plot(imp2)
 ```
@@ -500,7 +592,7 @@ or the compositional relation in the mammalsleep data:
 
 ---
 
-**23. Use passive imputation to impute the deterministic sleep relation in the `mammalsleep` data. Name the new multiply imputed dataset `pas.imp`.**
+**24. Use passive imputation to impute the deterministic sleep relation in the `mammalsleep` data. Name the new multiply imputed dataset `pas.imp`.**
 
 First, we create a `method` vector:
 ```{r cache = FALSE}

@@ -40,7 +40,7 @@ pre { /* Code block - determines code spacing between lines */
 
 ---
 
-The aim of this guide is to make you familiar with [mice](https://github.com/stefvanbuuren/mice) in `R` and to enhance your understanding of multiple imputation, in general. You will learn how to perform and inspect multiple imputations and how to pool the results of analyses performed on multiply-imputed data, how to approach different types of data and how to avoid some of the pitfalls many data scientists may fall into. The main objective is to increase your knowledge and understanding on applications of multiple imputation. 
+The aim of this guide is to make you familiar with [mice](https://github.com/amices/mice) in `R` and to enhance your understanding of multiple imputation, in general. You will learn how to perform and inspect multiple imputations and how to pool the results of analyses performed on multiply-imputed data, how to approach different types of data and how to avoid some of the pitfalls many data scientists may fall into. The main objective is to increase your knowledge and understanding on applications of multiple imputation. 
 
 We start by loading (with `library()`) the necessary packages and fixing the random seed to allow for our outcomes to be replicable. 
 ```{r, message=FALSE, warning=FALSE}
@@ -90,7 +90,7 @@ imp <- mice(nhanes, m = 3, print=F)
 
 **2. Change the predictor matrix**
 
-The predictor matrix is a square matrix that specifies the variables that are used to impute each incomplete variable. Let us have a look at the predictor matrix that was used
+The predictor matrix is a square matrix that specifies the variables that can be used to impute each incomplete variable. Let us have a look at the predictor matrix that was used
 ```{r, cache = FALSE}
 imp$pred
 ```
@@ -100,13 +100,13 @@ There are two ways in which you can create a predictor matrix in `mice`:
 
 - A. You can grab the `predictorMatrix` from every object returned by `mice()`:
 
-For example, we can use `mice()` to give you us initial predictor matrix, and change it afterwards, without running the algorithm. This can be done by typing
+For example, we can use `mice()` to give you us initial predictor matrix, and change it afterwards, without running the algorithm. This can be done by setting the maximum number of iterations to `maxit=0`. This leaves the algorithm at initialization. 
 ```{r, cache = FALSE}
 ini <- mice(nhanes, maxit=0, print=F)
 pred <- ini$pred
 pred
 ```
-The object `pred` contains the predictor matrix from an initial run of `mice` with zero iterations, specified by `maxit = 0`. 
+The object `pred` contains the predictor matrix from an initial run of `mice` with zero iterations. 
 
 - B. We can use `make.predictorMatrix()` to generate a predictor matrix from any incomplete data set.
 
@@ -243,10 +243,13 @@ Remember that `bmi` was imputed by Bayesian linear regression and (the range of)
 \[
 \text{bmi} = \beta_0 + \beta_1 \text{chl} + \epsilon
 \]
+
+Let's run the above model on the imputed data set. 
 ```{r, cache = FALSE}
 fit <- with(imp, lm(bmi ~ chl))
 fit
 ```
+
 The `fit` object contains the regression summaries for each data set. 
 The new object `fit` is actually of class `mira` (*multiply imputed repeated analyses*).
 ```{r, cache = FALSE}
@@ -276,7 +279,17 @@ which gives the relevant pooled regression coefficients and
 parameters, as well as the fraction of information about the
 coefficients missing due to nonresponse (`fmi`) and the proportion of the variation attributable to the missing data (`lambda`). The pooled fit object is of class `mipo`, which stands for *multiply imputed pooled object*. 
 
-`mice` can to pool many analyses from a variety of packages for you. For flexibility and in order to run custom pooling functions, mice also incorporates a function `pool.scalar()` which pools univariate estimates of $m$ repeated complete data analysis conform Rubin's pooling rules (Rubin, 1987, paragraph 3.1) 
+Alternatively, we could use a functional programming pipe to achieve the same
+```{r}
+fit <- imp %>% 
+  complete("all") %>% # list where each listed element is a completed set
+  map(lm, formula = bmi ~ chl) %>% 
+  pool() %>% 
+  summary()
+```
+Have a look at the different workflows that can be adopted with mice in [this chapter in Van Buuren's book](https://stefvanbuuren.name/fimd/workflow.html).
+
+`mice` can to pool many analyses from a variety of packages for you (it uses `broom` to gather all parameters). For flexibility and in order to run custom pooling functions, mice also incorporates a function `pool.scalar()` which pools univariate estimates of $m$ repeated complete data analysis conform Rubin's pooling rules (Rubin, 1987, paragraph 3.1) 
 
 ---
 

@@ -692,3 +692,10 @@ Van Buuren, S. and Groothuis-Oudshoorn, K. (2011). mice: Multivariate Imputation
 ---
 
 **- End of practical**
+
+---
+
+```{r}
+sessionInfo()
+```
+

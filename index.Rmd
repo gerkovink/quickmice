@@ -645,7 +645,7 @@ We can then run the imputations as
 pas.imp <- mice(mammalsleep, 
                 meth = meth, 
                 pred = pred, 
-                maxit = 10, 
+                maxit = 50, 
                 seed = 123, 
                 print = F)
 ```
@@ -653,6 +653,15 @@ pas.imp <- mice(mammalsleep,
 We used a custom predictor matrix and method vector to tailor our imputation approach to the passive imputation problem. We made sure to exclude `ts` as a predictor for the imputation of `sws` and `ps` to avoid circularity. 
 
 We also gave the imputation algorithm 10 iterations to converge and fixed the seed to `123` for this `mice` instance. This means that even when people do not fix the overall `R` seed for a session, exact replication of results can be obtained by simply fixing the `seed` for the random number generator within `mice`. Naturally, the same input (data) is each time required to yield the same output (`mids`-object). 
+
+When we study convergence, we see that the apparent non-convergence that we saw before has now disappeared with the use of passive imputation for the deterministic system `(ts, ps, sws)`. 
+
+```{r}
+plot(pas.imp)
+```
+
+
+---
 
 ## For fun
 

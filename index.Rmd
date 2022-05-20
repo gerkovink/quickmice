@@ -49,7 +49,6 @@ library(lattice) # plotting device
 library(dplyr)   # data manipulation
 library(magrittr)# pipes
 library(purrr)   # functional programming
-set.seed(123)
 ```
 
 All the best, 
@@ -61,6 +60,11 @@ All the best,
 # Multiple imputation with `mice`
 
 ---
+
+We fix the RNG seed to allow for replication of the below results. 
+```{r}
+set.seed(123)
+```
 
 The `mice` package contains several datasets. Once the package is loaded, these datasets can be used. Have a look at the `nhanes` dataset (Schafer, 1997, Table 6.14) by typing
 ```{r}
@@ -83,8 +87,10 @@ help(nhanes)
 
 The number of imputed data sets can be specified by the `m = ...` argument. For example, to create just three imputed data sets, specify
 ```{r, cache = FALSE}
-imp <- mice(nhanes, m = 3, print=F)
+imp <- mice(nhanes, m = 3, print=FALSE)
 ```
+
+The `print = FALSE` argument omits printing of the iteration history from the output. The main reason to omit printing here is to save space in the document. 
 
 ---
 
@@ -100,13 +106,13 @@ There are two ways in which you can create a predictor matrix in `mice`:
 
 - A. You can grab the `predictorMatrix` from every object returned by `mice()`:
 
-For example, we can use `mice()` to give you us initial predictor matrix, and change it afterwards, without running the algorithm. This can be done by setting the maximum number of iterations to `maxit=0`. This leaves the algorithm at initialization. 
+For example, we can use any `mice()` object fitted to the data to grab the `predictorMatrix` or we can use mice to quickly initialize a predictor matrix, and change it afterwards, without running the algorithm. This latter approach can be done by setting the maximum number of iterations to `maxit=0`. This leaves the algorithm at initialization, but generates the necessary inner objects. 
 ```{r, cache = FALSE}
-ini <- mice(nhanes, maxit=0, print=F)
+ini <- mice(nhanes, maxit=0, print=FALSE)
 pred <- ini$pred
 pred
 ```
-The object `pred` contains the predictor matrix from an initial run of `mice` with zero iterations. 
+The object `pred` contains the predictor matrix from an initial run of `mice` with zero iterations. It is a square matrix that captures the information about which variables (in the rows) are imputed based on which predictors (in the columns). 
 
 - B. We can use `make.predictorMatrix()` to generate a predictor matrix from any incomplete data set.
 
@@ -127,6 +133,8 @@ Use your new predictor matrix in `mice()` as follows
 imp <- mice(nhanes, predictorMatrix =  pred, print = F)
 ```
 
+As you can see, we can easily feed the new matrix `pred` to `mice`. We can also abbreviate the logical operater in the argument `print=FALSE`. 
+
 There is a `quickpred()` function that applies a quick selection procedure of predictors, which can be handy for datasets containing many variables. See `?quickpred` for more info. Selecting predictors according to data relations with a minimum correlation of $\rho=.30$ can be done by
 ```{r, cache = FALSE}
 ini <- mice(nhanes, pred=quickpred(nhanes, mincor=.3), print=F)
@@ -144,9 +152,9 @@ imp <- mice(nhanes, print=F)
 plot(imp)
 ```
 
-The plot shows the mean (left) and standard deviation (right) of the imputed values only. In general, we would like the streams to intermingle and be free of any trends at the later iterations. We inspect trends for the imputed values alone, because the observed data does not change.
+The plot shows the mean (left) and standard deviation (right) of the imputed values only. In general, we would like the streams to intermingle (mixing) and be free of any trends at the later iterations (non-stationary). We inspect trends for the imputed values alone, because the observed data does not change. In our case we cannot speak of convergence, especially not for `bmi`. More iterations or a different model are needed. 
 
-The `mice` algorithm uses random sampling, and therefore, the results will be (perhaps slightly) different if we repeat the imputations with different seeds. In order to get exactly the same result, use the `seed` argument 
+The `mice` algorithm uses random sampling, and therefore, the results will be (perhaps slightly) different if we repeat the imputations with different seeds. In order to get identical `mice` objects between calls, we can fix the  use the `seed` argument.  
 ```{r, cache = FALSE}
 imp <- mice(nhanes, seed=123, print=F)
 ```

@@ -1,6 +1,6 @@
 ---
 title: "A one-day crash course in `mice`"
-author: "Gerko Vink"
+author: "Gerko Vink and Stef van Buuren"
 format: 
   html:
     toc: true

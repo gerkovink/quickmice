@@ -1,6 +1,6 @@
 ---
 title: "A one-day crash course in `mice`"
-author: "Gerko Vink and Stef van Buuren"
+author: "Gerko Vink and Stef van Buuren [![](https://zenodo.org/badge/271731959.svg)](https://zenodo.org/badge/latestdoi/271731959)"
 format: 
   html:
     toc: true

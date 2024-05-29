@@ -216,9 +216,8 @@ Remember that `bmi` was imputed by Bayesian linear regression and (the range of)
 
 **7. Perform the following regression analysis on the multiply imputed data and assign the result to object `fit`. **
 
-\[
-\text{bmi} = \beta_0 + \beta_1 \text{chl} + \epsilon
-\]
+
+$$\text{bmi} = \beta_0 + \beta_1 \text{chl} + \epsilon$$
 
 Let's run the above model on the imputed data set. 
 ```{r, cache = FALSE}

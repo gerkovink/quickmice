@@ -1135,7 +1135,7 @@ Why does the average data set not serve as a good basis for analysis?
 <hr>
 <p><strong>18. Generate five imputed datasets with the default method <code>pmm</code>. Give the algorithm 10 iterations. </strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb109"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a>imp1 <span class="ot">&lt;-</span> <span class="fu">mice</span>(mammalsleep, <span class="at">maxit =</span> <span class="dv">10</span>, <span class="at">print=</span>F)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb109"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a>imp1 <span class="ot">&lt;-</span> <span class="fu">mice</span>(mammalsleep, <span class="at">maxit =</span> <span class="dv">10</span>, <span class="at">print=</span>F, <span class="at">seed =</span> <span class="dv">123</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: Number of logged events: 525</code></pre>
 </div>
@@ -1170,30 +1170,30 @@ Why does the average data set not serve as a good basis for analysis?
 <span id="cb113-2"><a href="#cb113-2" aria-hidden="true" tabindex="-1"></a>est1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Class: mipo    m = 5 
-         term m   estimate       ubar            b         t dfcom       df
-1 (Intercept) 5  9.5607274 0.71932838 0.0029701498 0.7228926    59 56.79565
-2   log10(bw) 5 -1.7050174 0.10154719 0.0006686140 0.1023495    59 56.59992
-3         odi 5 -0.4746854 0.08993651 0.0005819014 0.0906348    59 56.60929
-          riv      lambda        fmi
-1 0.004954872 0.004930442 0.03821278
-2 0.007901123 0.007839185 0.04113321
-3 0.007764162 0.007704344 0.04099767</code></pre>
+         term m  estimate       ubar           b          t dfcom       df
+1 (Intercept) 5  9.835352 0.66658822 0.289999257 1.01458732    59 17.83515
+2   log10(bw) 5 -1.603951 0.09410189 0.063729587 0.17057739    59 12.19537
+3         odi 5 -0.501393 0.08334249 0.002541903 0.08639278    59 54.15129
+         riv     lambda        fmi
+1 0.52206010 0.34299572 0.40606264
+2 0.81268830 0.44833317 0.52094301
+3 0.03659938 0.03530716 0.06906643</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb115"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(est1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>         term   estimate std.error statistic       df      p.value
-1 (Intercept)  9.5607274 0.8502309 11.244860 56.79565 4.506914e-16
-2   log10(bw) -1.7050174 0.3199211 -5.329493 56.59992 1.776535e-06
-3         odi -0.4746854 0.3010561 -1.576734 56.60929 1.204292e-01</code></pre>
+<pre><code>         term  estimate std.error statistic       df      p.value
+1 (Intercept)  9.835352 1.0072673  9.764391 17.83515 1.403469e-08
+2   log10(bw) -1.603951 0.4130102 -3.883562 12.19537 2.111436e-03
+3         odi -0.501393 0.2939265 -1.705845 54.15129 9.376719e-02</code></pre>
 </div>
 </div>
 <p>The <code>fmi</code> and <code>lambda</code> are much too high. This is due to <code>species</code> being included in the imputation model. Because there are 62 species and mice automatically converts factors (categorical variables) to dummy variables, each species is modeled by its own imputation model.</p>
 <hr>
 <p><strong>21. Impute <code>mammalsleep</code> again, but now exclude <code>species</code> from the data.</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb117"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb117-1"><a href="#cb117-1" aria-hidden="true" tabindex="-1"></a>imp2 <span class="ot">&lt;-</span> <span class="fu">mice</span>(mammalsleep[ , <span class="sc">-</span><span class="dv">1</span>], <span class="at">maxit =</span> <span class="dv">10</span>, <span class="at">print =</span> F)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb117"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb117-1"><a href="#cb117-1" aria-hidden="true" tabindex="-1"></a>imp2 <span class="ot">&lt;-</span> <span class="fu">mice</span>(mammalsleep[ , <span class="sc">-</span><span class="dv">1</span>], <span class="at">maxit =</span> <span class="dv">10</span>, <span class="at">print =</span> F, <span class="at">seed =</span> <span class="dv">123</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Number of logged events: 28</code></pre>
+<pre><code>Warning: Number of logged events: 17</code></pre>
 </div>
 </div>
 <hr>
@@ -1204,21 +1204,21 @@ Why does the average data set not serve as a good basis for analysis?
 <span id="cb119-3"><a href="#cb119-3" aria-hidden="true" tabindex="-1"></a>est2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Class: mipo    m = 5 
-         term m   estimate       ubar           b          t dfcom       df
-1 (Intercept) 5 11.5642024 0.58378928 0.085177803 0.68600264    59 38.26910
-2   log10(bw) 5 -1.1353905 0.08241321 0.007635239 0.09157550    59 45.52937
-3         odi 5 -0.9052441 0.07299027 0.012571568 0.08807615    59 35.12666
-        riv    lambda       fmi
-1 0.1750861 0.1489985 0.1902401
-2 0.1111750 0.1000517 0.1371405
-3 0.2066835 0.1712822 0.2147541</code></pre>
+         term m  estimate       ubar           b          t dfcom       df
+1 (Intercept) 5 11.597629 0.60153972 0.025950577 0.63268041    59 52.55839
+2   log10(bw) 5 -1.157992 0.08491903 0.004665962 0.09051818    59 50.95416
+3         odi 5 -0.895605 0.07520958 0.001453635 0.07695394    59 55.40537
+         riv     lambda        fmi
+1 0.05176831 0.04922026 0.08344658
+2 0.06593521 0.06185668 0.09663225
+3 0.02319335 0.02266761 0.05613482</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb121"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb121-1"><a href="#cb121-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(est2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>         term   estimate std.error statistic       df      p.value
-1 (Intercept) 11.5642024 0.8282528 13.962166 38.26910 1.335912e-16
-2   log10(bw) -1.1353905 0.3026144 -3.751938 45.52937 4.948623e-04
-3         odi -0.9052441 0.2967763 -3.050258 35.12666 4.331343e-03</code></pre>
+<pre><code>         term  estimate std.error statistic       df      p.value
+1 (Intercept) 11.597629 0.7954121 14.580655 52.55839 4.121839e-20
+2   log10(bw) -1.157992 0.3008624 -3.848910 50.95416 3.321470e-04
+3         odi -0.895605 0.2774057 -3.228502 55.40537 2.093043e-03</code></pre>
 </div>
 </div>
 <p>Note that the <code>fmi</code> and <code>lambda</code> have dramatically decreased. The imputation model has been greatly improved.</p>

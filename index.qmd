@@ -516,7 +516,7 @@ Answer: 8 patterns in total, with the pattern where everything is observed occur
 
 **18. Generate five imputed datasets with the default method `pmm`. Give the algorithm 10 iterations. **
 ```{r}
-imp1 <- mice(mammalsleep, maxit = 10, print=F)
+imp1 <- mice(mammalsleep, maxit = 10, print=F, seed = 123)
 ```
 We ignore the `loggedEvents` for now: it contains a list of all decisions and exclusions that are performed by the `mice` algorithm. To inspect the trace lines for assessing algorithmic convergence:
 ```{r}
@@ -546,7 +546,7 @@ The `fmi` and `lambda` are much too high. This is due to `species` being include
 
 **21. Impute `mammalsleep` again, but now exclude `species` from the data.**
 ```{r, cache = FALSE}
-imp2 <- mice(mammalsleep[ , -1], maxit = 10, print = F)
+imp2 <- mice(mammalsleep[ , -1], maxit = 10, print = F, seed = 123)
 ```
 
 ---
